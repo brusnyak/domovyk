@@ -1,0 +1,213 @@
+# domovyk-map seed rows. ALL UNVERIFIED: written from general knowledge, not checked against primary sources.
+# checked_on is empty and status is unverified for every row. See SCHEMA.md.
+rows:
+  - id: aws-ec2-instance
+    aws_service: Amazon EC2 (instances)
+    class: portable
+    typical_eu_target: OVHcloud public cloud instance or Hetzner Cloud server
+    caveat: Instance type and AMI do not map 1:1; CPU, RAM and network differ.
+    checked_on: ""
+    status: unverified
+  - id: aws-ebs-volume
+    aws_service: Amazon EBS (volumes)
+    class: portable
+    typical_eu_target: Provider block volume attached to the instance
+    caveat: Snapshot and restore path differs; use Velero or CSI snapshots.
+    checked_on: ""
+    status: unverified
+  - id: aws-ebs-snapshot
+    aws_service: Amazon EBS (snapshots)
+    class: rework
+    typical_eu_target: Velero backup to object storage
+    caveat: No native snapshot copy across clouds; data copy is a separate step.
+    checked_on: ""
+    status: unverified
+  - id: aws-vpc
+    aws_service: Amazon VPC (subnets, route tables)
+    class: rework
+    typical_eu_target: Provider private network plus Kubernetes CNI
+    caveat: Address plan and routing must be redesigned, not copied.
+    checked_on: ""
+    status: unverified
+  - id: aws-security-group
+    aws_service: Amazon EC2 security groups
+    class: rework
+    typical_eu_target: Provider firewall rules
+    caveat: Stateful rule semantics differ; check each rule.
+    checked_on: ""
+    status: unverified
+  - id: aws-elastic-ip
+    aws_service: Elastic IP
+    class: portable
+    typical_eu_target: Provider floating IP
+    caveat: IP addresses change at cut-over; plan DNS TTL.
+    checked_on: ""
+    status: unverified
+  - id: aws-route53-zone
+    aws_service: Amazon Route 53 (hosted zones)
+    class: rework
+    typical_eu_target: External DNS provider managed by external-dns
+    caveat: Route 53 alias records and health checks have no direct equivalent.
+    checked_on: ""
+    status: unverified
+  - id: aws-rds-postgresql
+    aws_service: Amazon RDS for PostgreSQL
+    class: rework
+    typical_eu_target: Self-managed PostgreSQL on a VM, or managed PostgreSQL if the provider offers it
+    caveat: Extensions and parameter groups differ; cut-over needs logical replication (pgcopydb --follow).
+    checked_on: ""
+    status: unverified
+  - id: aws-rds-mysql
+    aws_service: Amazon RDS for MySQL / MariaDB
+    class: rework
+    typical_eu_target: Self-managed MySQL or MariaDB on a VM
+    caveat: Replication setup and binlog retention must be checked.
+    checked_on: ""
+    status: unverified
+  - id: aws-aurora
+    aws_service: Amazon Aurora
+    class: rewrite
+    typical_eu_target: Self-managed PostgreSQL or MySQL
+    caveat: Aurora storage layer and failover are AWS-specific; expect changes to the replication plan.
+    checked_on: ""
+    status: unverified
+  - id: aws-dynamodb
+    aws_service: Amazon DynamoDB
+    class: rewrite
+    typical_eu_target: Application-level port to PostgreSQL or a key-value store
+    caveat: Data model and access patterns must change.
+    checked_on: ""
+    status: unverified
+  - id: aws-s3-bucket
+    aws_service: Amazon S3 (Standard buckets)
+    class: rework
+    typical_eu_target: S3-compatible object storage at the EU provider
+    caveat: API differences in edge cases, IAM-style policies and lifecycle rules; copy with rclone.
+    checked_on: ""
+    status: unverified
+  - id: aws-s3-glacier
+    aws_service: Amazon S3 Glacier storage classes
+    class: rework
+    typical_eu_target: Cold tier of the EU object storage, if offered
+    caveat: Restore times and retrieval fees differ; check the target has a cold tier.
+    checked_on: ""
+    status: unverified
+  - id: aws-alb
+    aws_service: Elastic Load Balancing (Application Load Balancer)
+    class: rework
+    typical_eu_target: Ingress controller or reverse proxy on Kubernetes
+    caveat: Listener rules and WAF integration must be rebuilt.
+    checked_on: ""
+    status: unverified
+  - id: aws-nlb
+    aws_service: Elastic Load Balancing (Network Load Balancer)
+    class: rework
+    typical_eu_target: Provider load balancer or a service of type LoadBalancer
+    caveat: Health check and proxy protocol behaviour differ.
+    checked_on: ""
+    status: unverified
+  - id: aws-eks
+    aws_service: Amazon EKS
+    class: rework
+    typical_eu_target: OVHcloud Managed Kubernetes, or Talos or k3s on Hetzner
+    caveat: Node groups, IAM-linked service accounts and add-ons must be rebuilt.
+    checked_on: ""
+    status: unverified
+  - id: aws-ecs-fargate
+    aws_service: Amazon ECS (Fargate and EC2 launch types)
+    class: rework
+    typical_eu_target: Containers on Kubernetes or on VMs
+    caveat: Task definitions map to manifests; service discovery differs.
+    checked_on: ""
+    status: unverified
+  - id: aws-lambda
+    aws_service: AWS Lambda
+    class: rewrite
+    typical_eu_target: Container service or long-running process
+    caveat: Event triggers and IAM execution roles have no direct equivalent. Lambda-heavy accounts are out of scope.
+    checked_on: ""
+    status: unverified
+  - id: aws-api-gateway
+    aws_service: Amazon API Gateway
+    class: rewrite
+    typical_eu_target: Ingress or API gateway software on Kubernetes
+    caveat: Authorisers, usage plans and request transforms must be rebuilt.
+    checked_on: ""
+    status: unverified
+  - id: aws-sqs
+    aws_service: Amazon SQS
+    class: rewrite
+    typical_eu_target: Self-hosted message broker (for example RabbitMQ or NATS)
+    caveat: Visibility timeout, dead-letter and delivery semantics differ.
+    checked_on: ""
+    status: unverified
+  - id: aws-sns
+    aws_service: Amazon SNS
+    class: rewrite
+    typical_eu_target: Self-hosted pub/sub or broker topics
+    caveat: Fan-out and filter policies must be rebuilt.
+    checked_on: ""
+    status: unverified
+  - id: aws-eventbridge
+    aws_service: Amazon EventBridge
+    class: rewrite
+    typical_eu_target: Application event bus or workflow engine
+    caveat: Event patterns and AWS service integrations have no direct equivalent.
+    checked_on: ""
+    status: unverified
+  - id: aws-step-functions
+    aws_service: AWS Step Functions
+    class: rewrite
+    typical_eu_target: Workflow engine on Kubernetes
+    caveat: State machine definitions must be rewritten.
+    checked_on: ""
+    status: unverified
+  - id: aws-cloudfront
+    aws_service: Amazon CloudFront
+    class: rework
+    typical_eu_target: EU CDN provider or reverse proxy cache
+    caveat: Edge functions and origin access controls must be rebuilt.
+    checked_on: ""
+    status: unverified
+  - id: aws-acm
+    aws_service: AWS Certificate Manager
+    class: rework
+    typical_eu_target: cert-manager with Let's Encrypt
+    caveat: Private CA and ACM-only certificates cannot be exported; reissue.
+    checked_on: ""
+    status: unverified
+  - id: aws-secrets-manager
+    aws_service: AWS Secrets Manager
+    class: rework
+    typical_eu_target: External Secrets Operator with a self-hosted or provider secret store
+    caveat: Secret rotation hooks are AWS-specific; secret values must be moved through a controlled channel.
+    checked_on: ""
+    status: unverified
+  - id: aws-kms
+    aws_service: AWS KMS
+    class: rework
+    typical_eu_target: Application-level encryption with a new key store
+    caveat: Customer-managed keys cannot be exported; data must be re-encrypted.
+    checked_on: ""
+    status: unverified
+  - id: aws-cloudwatch-logs
+    aws_service: Amazon CloudWatch Logs
+    class: rework
+    typical_eu_target: Loki with OpenTelemetry collector
+    caveat: Log retention and query language differ; Logs Insights queries must be rewritten.
+    checked_on: ""
+    status: unverified
+  - id: aws-cloudwatch-alarms
+    aws_service: Amazon CloudWatch metrics and alarms
+    class: rework
+    typical_eu_target: Prometheus with Alertmanager, shown in Grafana
+    caveat: Metric names and alarm semantics differ; rebuild each alarm.
+    checked_on: ""
+    status: unverified
+  - id: aws-elasticache-redis
+    aws_service: Amazon ElastiCache (Redis OSS)
+    class: rework
+    typical_eu_target: Self-hosted Redis or Valkey on Kubernetes
+    caveat: Cluster mode, replication and persistence settings must be re-checked; data copy is a separate step.
+    checked_on: ""
+    status: unverified
