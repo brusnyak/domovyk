@@ -44,6 +44,7 @@ go build ./cmd/domovyk
 ```
 
 Replace `OWNER` in `go.mod` before publishing.
+Container proof: `deploy/k8s/README.md` — builds `domovyk:dev`, runs `domovyk score` on a local kind cluster, real output captured.
 
 ## Licence
 
