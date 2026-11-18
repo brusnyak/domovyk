@@ -1,0 +1,6 @@
+ServiceName,ServiceCategory,ResourceId,ResourceType,ChargeCategory,BilledCost,EffectiveCost,BillingCurrency,ConsumedQuantity,ConsumedUnit,ChargePeriodStart
+Amazon EC2,Compute,i-1,AWS::EC2::Instance,Usage,60,55,EUR,100,Hours,2026-10-01T00:00:00Z
+Amazon EC2,Compute,i-2,AWS::EC2::Instance,Usage,40,35,EUR,50,Hours,2026-10-02T00:00:00Z
+Amazon EC2,Compute,,,Credit,-10,-10,EUR,,,2026-10-02T00:00:00Z
+Amazon S3,Storage,bucket-1,AWS::S3::Bucket,Usage,20,20,EUR,200,GB-month,2026-10-01T00:00:00Z
+AWS Lambda,Compute,function-1,AWS::Lambda::Function,Usage,5,5,EUR,10,Requests,2026-10-01T00:00:00Z

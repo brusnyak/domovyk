@@ -21,7 +21,7 @@ Usage:
                    Discover read-only AWS inventory into inventory JSON.
   domovyk score    [--inventory FILE] [--mapping FILE] [--out FILE]
                    Score each resource as portable / rework / rewrite.
-  domovyk price    [--focus FILE]
+  domovyk price    --focus FILE --out FILE [--prices FILE] [--fx USD=0.92]
                    Compare AWS billing against OVHcloud / Hetzner (v0.2).
 `
 
@@ -114,17 +114,34 @@ func runScore(args []string) {
 
 func runPrice(args []string) {
 	fs := flag.NewFlagSet("price", flag.ExitOnError)
-	focusPath := fs.String("focus", "", "FOCUS 1.2 billing export path (required)")
+	focusPath := fs.String("focus", "", "FOCUS 1.2 billing export CSV for one calendar month (required)")
+	pricesPath := fs.String("prices", "map/prices.yaml", "sourced EUR price table")
+	mapPath := fs.String("map", "map/domovyk-map.yaml", "mapping table")
+	out := fs.String("out", "", "write results JSON (mode 0600) (required)")
+	fxFlag := fs.String("fx", "", "explicit currency-to-EUR rate, e.g. USD=0.92")
 	fs.Parse(args)
 
-	if *focusPath == "" {
-		fmt.Fprintln(os.Stderr, "error: --focus is required for price comparison")
+	if *focusPath == "" || *out == "" {
+		fmt.Fprintln(os.Stderr, "error: --focus and --out are required for price comparison")
 		fmt.Print(usage)
 		os.Exit(2)
 	}
-
-	if err := price.Compare(*focusPath); err != nil {
+	fx, err := price.ParseFX(*fxFlag)
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "price failed: %v\n", err)
+		os.Exit(1)
+	}
+	rows, err := price.Compare(*focusPath, *pricesPath, *mapPath, fx)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "price failed: %v\n", err)
+		os.Exit(1)
+	}
+	if err := price.WriteResults(*out, rows); err != nil {
+		fmt.Fprintf(os.Stderr, "write results failed: %v\n", err)
+		os.Exit(1)
+	}
+	if err := price.PrintTable(os.Stdout, rows); err != nil {
+		fmt.Fprintf(os.Stderr, "print failed: %v\n", err)
 		os.Exit(1)
 	}
 }

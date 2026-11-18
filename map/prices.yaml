@@ -1,0 +1,224 @@
+rows:
+  # ============================================================
+  # Hetzner Cloud (EUR, excl. VAT) — hetzner.com
+  # ============================================================
+  - provider: hetzner
+    sku: cx23
+    category: compute
+    unit: month
+    price_eur: 5.99
+    source_url: https://www.hetzner.com/cloud/cost-optimized/
+    checked_on: 2026-11-18
+    status: verified
+
+  - provider: hetzner
+    sku: cx33
+    category: compute
+    unit: month
+    price_eur: 8.99
+    source_url: https://www.hetzner.com/cloud/cost-optimized/
+    checked_on: 2026-11-18
+    status: verified
+
+  - provider: hetzner
+    sku: cx43
+    category: compute
+    unit: month
+    price_eur: 16.49
+    source_url: https://www.hetzner.com/cloud/cost-optimized/
+    checked_on: 2026-11-18
+    status: verified
+
+  - provider: hetzner
+    sku: cpx22
+    category: compute
+    unit: month
+    price_eur: 16.99
+    source_url: https://www.hetzner.com/cloud/regular-performance/
+    checked_on: 2026-11-18
+    status: verified
+
+  - provider: hetzner
+    sku: cpx32
+    category: compute
+    unit: month
+    price_eur: 30.49
+    source_url: https://www.hetzner.com/cloud/regular-performance/
+    checked_on: 2026-11-18
+    status: verified
+
+  - provider: hetzner
+    sku: cpx42
+    category: compute
+    unit: month
+    price_eur: 59.49
+    source_url: https://www.hetzner.com/cloud/regular-performance/
+    checked_on: 2026-11-18
+    status: verified
+
+  - provider: hetzner
+    sku: cax11
+    category: compute
+    unit: month
+    price_eur: 6.49
+    source_url: https://www.hetzner.com/cloud/cost-optimized/
+    checked_on: 2026-11-18
+    status: verified
+
+  - provider: hetzner
+    sku: cax21
+    category: compute
+    unit: month
+    price_eur: 10.99
+    source_url: https://www.hetzner.com/cloud/cost-optimized/
+    checked_on: 2026-11-18
+    status: verified
+
+  - provider: hetzner
+    sku: cax31
+    category: compute
+    unit: month
+    price_eur: 21.49
+    source_url: https://www.hetzner.com/cloud/cost-optimized/
+    checked_on: 2026-11-18
+    status: verified
+
+  - provider: hetzner
+    sku: volumes
+    category: block_storage
+    unit: GB-month
+    price_eur:
+    source_url: https://www.hetzner.com/cloud/block-storage/
+    checked_on: 2026-11-18
+    status: unverified
+
+  - provider: hetzner
+    sku: object-storage-standard
+    category: object_storage
+    unit: TB-month
+    price_eur: 6.49
+    source_url: https://www.hetzner.com/storage/object-storage/
+    checked_on: 2026-11-18
+    status: verified
+
+  - provider: hetzner
+    sku: object-storage-egress
+    category: egress
+    unit: TB
+    price_eur: 1.00
+    source_url: https://www.hetzner.com/storage/object-storage/
+    checked_on: 2026-11-18
+    status: verified
+
+  - provider: hetzner
+    sku: load-balancer-lb11
+    category: compute
+    unit: month
+    price_eur: 7.49
+    source_url: https://www.hetzner.com/cloud/load-balancer/
+    checked_on: 2026-11-18
+    status: verified
+
+  - provider: hetzner
+    sku: traffic-overage-eu-central
+    category: egress
+    unit: TB
+    price_eur: 1.00
+    source_url: https://www.hetzner.com/cloud/cost-optimized/
+    checked_on: 2026-11-18
+    status: verified
+
+  # ============================================================
+  # OVHcloud Public Cloud (EUR, excl. VAT) — ovhcloud.com/de
+  # German page lists prices incl. VAT (19 %); excl. VAT = incl / 1.19,
+  # monthly = hourly excl. VAT x 730 h.
+  # ============================================================
+  - provider: ovhcloud
+    sku: b3-8
+    category: compute
+    unit: month
+    price_eur: 37.38
+    source_url: https://www.ovhcloud.com/de/public-cloud/prices/
+    checked_on: 2026-11-18
+    status: unverified  # not confirmed on the source page by curl (JS-rendered or derived); re-check in a browser
+
+  - provider: ovhcloud
+    sku: b3-16
+    category: compute
+    unit: month
+    price_eur: 74.68
+    source_url: https://www.ovhcloud.com/de/public-cloud/prices/
+    checked_on: 2026-11-18
+    status: unverified  # not confirmed on the source page by curl (JS-rendered or derived); re-check in a browser
+
+  - provider: ovhcloud
+    sku: b3-32
+    category: compute
+    unit: month
+    price_eur: 149.36
+    source_url: https://www.ovhcloud.com/de/public-cloud/prices/
+    checked_on: 2026-11-18
+    status: unverified  # not confirmed on the source page by curl (JS-rendered or derived); re-check in a browser
+
+  - provider: ovhcloud
+    sku: c3-4
+    category: compute
+    unit: month
+    price_eur: 33.36
+    source_url: https://www.ovhcloud.com/de/public-cloud/prices/
+    checked_on: 2026-11-18
+    status: unverified  # not confirmed on the source page by curl (JS-rendered or derived); re-check in a browser
+
+  - provider: ovhcloud
+    sku: c3-8
+    category: compute
+    unit: month
+    price_eur: 66.65
+    source_url: https://www.ovhcloud.com/de/public-cloud/prices/
+    checked_on: 2026-11-18
+    status: unverified  # not confirmed on the source page by curl (JS-rendered or derived); re-check in a browser
+
+  - provider: ovhcloud
+    sku: c3-16
+    category: compute
+    unit: month
+    price_eur: 133.23
+    source_url: https://www.ovhcloud.com/de/public-cloud/prices/
+    checked_on: 2026-11-18
+    status: unverified  # not confirmed on the source page by curl (JS-rendered or derived); re-check in a browser
+
+  - provider: ovhcloud
+    sku: block-storage-classic
+    category: block_storage
+    unit: GB-month
+    price_eur: 0.0431
+    source_url: https://www.ovhcloud.com/de/public-cloud/prices/
+    checked_on: 2026-11-18
+    status: verified
+
+  - provider: ovhcloud
+    sku: object-storage-standard
+    category: object_storage
+    unit: GB-month
+    price_eur: 0.0140
+    source_url: https://www.ovhcloud.com/de/public-cloud/prices/
+    checked_on: 2026-11-18
+    status: verified
+
+  - provider: ovhcloud
+    sku: object-storage-egress
+    category: egress
+    unit: TB
+    price_eur: 0.00
+    source_url: https://www.ovhcloud.com/de/public-cloud/prices/
+    checked_on: 2026-11-18
+    status: verified
+
+  - provider: ovhcloud
+    sku: managed-postgresql-essential-db1-4
+    category: managed_db
+    unit: month
+    price_eur: 54.46
+    source_url: https://www.ovhcloud.com/de/public-cloud/prices/
+    checked_on: 2026-11-18
+    status: unverified  # not confirmed on the source page by curl (JS-rendered or derived); re-check in a browser

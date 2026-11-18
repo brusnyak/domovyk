@@ -2,7 +2,7 @@
 
 Open-source planner for moving AWS workloads to EU providers (OVHcloud, Hetzner). A Go CLI that runs on your own machine with a read-only IAM role.
 
-**Status: pre-alpha, nothing built.** This repo holds the skeleton, the spec and the research notes. No subcommand does real work yet.
+**Status: pre-alpha.** `discover` and `score` run (discovery has been run once against a real AWS account; `score` found no mapping for IAM roles, and the 30 mapping rows are unverified seed data). `price` compares a FOCUS 1.2 export with the Hetzner and OVHcloud rows in `map/prices.yaml`: each row has a source URL and a `checked_on` date, and rows not confirmed on the provider's page are marked `unverified`. Only services with a matching price row are priced (object storage so far); EC2 compute is reported as `NO_PRICE` until instance-hours are matched to a monthly price. `generate` and later stages do not exist.
 
 ## What it is meant to do
 
