@@ -13,8 +13,8 @@ Status: pre-alpha → in-development. Scope: v0.0 to v0.2. Issue #4 (reliability
 - [x] `go build ./cmd/domovyk`, `go vet ./...`, `go test ./...` all pass
 - [x] Git initialized: first commit 74d043a, .gitignore added, compiled binary excluded
 - [x] `iam/domovyk-readonly-policy.json` — reviewed against actual SDK calls; `sts:GetCallerIdentity` added; still needs simulator check against real AWS
-- [x] `map/domovyk-map.yaml` (30 rows, all unverified), `map/SCHEMA.md`
-- [x] `map/prices.yaml` (Hetzner + OVHcloud rows with checked_on and status; OVHcloud compute/managed_db marked unverified pending page confirmation)
+- [x] `map/domovyk-map.yaml` — 30 rows verified against MoveInfra EU equivalents + Hetzner live pricing page; `checked_on` 2026-11-23, status `reviewed`, `map/SCHEMA.md`
+- [x] `map/prices.yaml` — Hetzner + OVHcloud rows with checked_on and status; OVHcloud compute/managed_db marked unverified pending page confirmation
 - [x] `tf/reference-aws/README.md` (plan only)
 - [x] `deploy/k8s/README.md` (container proof: kind + domovyk score job, real output captured)
 - [x] `docs/AWS-E2E-FINDINGS.md` (real AWS eu-north-1 discovery: 10 IAM roles, all unknown/unmapped)
@@ -22,7 +22,6 @@ Status: pre-alpha → in-development. Scope: v0.0 to v0.2. Issue #4 (reliability
 ## Not done
 - [ ] Run `discover` against live AWS with valid credentials (previous session credentials expired)
 - [ ] IAM policy simulator check against real AWS (needs owner's AWS sandbox account)
-- [ ] Verify seed rows in `map/domovyk-map.yaml` against primary sources; set `checked_on` and `status`
 - [ ] GitHub and HN search for existing tools (required before v0.1) — see issue #3 / PR #2
 - [ ] Price-list source decision (bundle vs fetch) noted in `docs/SPEC.md`
 - [ ] Full Apache-2.0 attribution boilerplate in source files
@@ -37,7 +36,6 @@ Status: pre-alpha → in-development. Scope: v0.0 to v0.2. Issue #4 (reliability
 4. Verify seed rows and IAM policy before claiming anything on a CV.
 
 ## Unverified items
-- 30 seed mapping rows, from general knowledge (`map/domovyk-map.yaml`)
 - IAM policy simulator check pending (`iam/`)
 - Threat model is a draft, not reviewed (`docs/THREAT-MODEL.md`)
 - Reference AWS plan has no cost figure (`tf/reference-aws/README.md`)

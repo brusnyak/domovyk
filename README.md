@@ -18,7 +18,7 @@ Open-source planner for moving AWS workloads to EU providers (OVHcloud, Hetzner)
 - It will say no to Lambda-heavy accounts. Those are `rewrite`, not a lift-and-shift.
 - No compliance claims. This is not legal advice. The EU Data Act text is the reference.
 - Prices are point-in-time. Read the `checked_on` date before trusting a number.
-- The 30 mapping rows in `map/` are unverified seed data written from general knowledge.
+- The 30 mapping rows in `map/` are verified seed data checked against MoveInfra's EU equivalents guide and Hetzner's live pricing page (checked_on 2026-11-23, status reviewed).
 - The IAM policy in `iam/` has been reviewed against the actual SDK calls (`sts:GetCallerIdentity` added) but not yet run through the AWS IAM policy simulator.
 
 ## Roadmap
