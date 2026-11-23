@@ -119,6 +119,7 @@ func classify(res inventory.Resource, rows []MappingRow) ScoreResult {
 		Source:     "unmapped",
 	}
 
+	// Exact service-name match takes priority.
 	for _, row := range rows {
 		if strings.EqualFold(row.AWSService, res.Service) {
 			result.Class = row.Class
@@ -144,8 +145,8 @@ func classify(res inventory.Resource, rows []MappingRow) ScoreResult {
 		}
 
 		// Prefer longer, more specific matches.
-		if match && matchLen > len(result.Source) {
 		if match && matchLen > bestLen {
+			bestLen = matchLen
 			result.Class = row.Class
 			result.Caveat = row.Caveat
 			result.Source = row.ID
