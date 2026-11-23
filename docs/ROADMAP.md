@@ -1,34 +1,67 @@
-# ROADMAP: domovyk
+# Roadmap: Domovyk
 
-## v0.0: skeleton (in progress)
+This roadmap prioritizes a dependable narrow workflow over broad provider/service coverage. All future milestones are gated by tests and pilot evidence.
 
-- [x] Folder layout and README (`README.md`)
-- [x] Spec and threat-model draft (`docs/`)
-- [x] Go CLI stub with `discover`, `score`, `price` printing "not implemented" (`cmd/domovyk/`)
-- [x] Read-only IAM policy, UNREVIEWED (`iam/`)
-- [x] 30 seed mapping rows, all unverified (`map/`)
-- [x] Reference AWS setup plan, no `.tf` files (`tf/reference-aws/README.md`)
-- [ ] Review of IAM policy against AWS docs and a policy simulator
-- [ ] Verify or correct the 30 seed rows
-- [ ] Go module path set (`OWNER` placeholder replaced)
-- [ ] Full Apache-2.0 text in `LICENSE`
-- [ ] Repo initialised and first commit (owner decision)
+## Gate 0 — Establish a trustworthy baseline (now)
 
-## v0.1: discover, score, sample exit plan
+- [ ] Add CI for Go format, tests, vet, and build.
+- [ ] Run baseline build and tests; record actual results and supported Go version.
+- [ ] Remove direct credential flags; use the standard AWS credential chain only.
+- [ ] Audit discovery for pagination, region scope, partial failures, timeouts, and context cancellation.
+- [ ] Write inventories atomically with restrictive permissions; avoid unsafe overwrite.
+- [ ] Add tests for serialization, permissions, partial discovery, and error paths.
+- [ ] Review IAM policy against the exact API calls and AWS documentation.
+- [ ] Replace placeholder license and add the mapping-data license before publishing.
 
-- [ ] Discover EC2, RDS, S3 (metadata), ELB, EKS, Lambda (list only), IAM (list only) into `inventory.json`
-- [ ] Score each resource against the mapping data
-- [ ] Sample exit plan for the reference AWS setup
-- [ ] Run against `wocus` and `recareo-web` read-only (owner decision)
+**Exit criteria:** reproducible CI green; no known credential exposure; discovery reports incomplete coverage honestly; security review findings tracked.
 
-## v0.2: price from FOCUS export
+## Gate 1 — Validate the wedge (before executor work)
 
-- [ ] Parse FOCUS 1.2 billing export
-- [ ] Price lists for OVHcloud and Hetzner with `checked_on` on every row
-- [ ] Cost comparison table with stale-price warning
+- [ ] Conduct 5–10 interviews with teams that operate AWS and are considering EU hosting.
+- [ ] Secure one pilot partner and a safe non-production workload or sanitized state.
+- [ ] Confirm the first source/target route and workload constraints.
+- [ ] Compare the proposed workflow against MoveInfra, cloudexit, and native tools using the pilot's actual requirements.
+- [ ] Define measurable acceptance tests and rollback limits with the pilot operator.
 
-## Roadmap only (not in scope)
+**Exit criteria:** a partner commits to a safe rehearsal and confirms the problem is worth solving. Otherwise revise the product direction.
 
-- v0.3: generate OpenTofu modules (OVH Managed Kubernetes; Talos or k3s on Hetzner; Argo CD, cert-manager, external-dns, External Secrets)
-- v0.4: measured cut-over with runbook and rollback (pgcopydb --follow, rclone, Velero, DNS TTL lowered 48 h ahead). Owner's `wocus` and `recareo-web` as first real case.
-- v0.5: monthly `domovyk drift` job; provider plugin contract test suite
+## Gate 2 — Trustworthy discovery and planning
+
+- [ ] Multi-region discovery with explicit service/region coverage and pagination status.
+- [ ] Typed inventory schema with schema version and provenance.
+- [ ] Mapping evidence: source URL, checked date, confidence/status, known limitations.
+- [ ] Explainable plan with unknowns and blockers; no opaque portability score.
+- [ ] Deterministic plan output and content digest.
+- [ ] Redaction and local artifact security tests.
+
+**Exit criteria:** pilot operator can independently review and reproduce the plan.
+
+## Gate 3 — First executable vertical slice
+
+Proposed first path: one stateless EC2 workload to one Hetzner Cloud server, pending pilot confirmation.
+
+- [ ] Generate target infrastructure with OpenTofu; do not implement a new provisioning engine.
+- [ ] Build a dry-run plan and bind approval to its digest.
+- [ ] Execute one bounded provisioning/deployment workflow with a durable journal.
+- [ ] Support safe resume after interruption and idempotent retries.
+- [ ] Validate application health and operator-defined smoke tests.
+- [ ] Keep DNS/traffic cutover manual, separate, and explicitly approved.
+- [ ] Document and rehearse rollback in a disposable environment.
+
+**Exit criteria:** repeated end-to-end rehearsal succeeds, including injected failures and rollback, with no unapproved side effects.
+
+## Gate 4 — Pilot and hardening
+
+- [ ] Run with the pilot in a controlled non-production environment.
+- [ ] Measure coverage, interventions, duration, failures, recovery, and rollback.
+- [ ] Fix all critical/high severity issues before broadening scope.
+- [ ] Publish limitations and a reproducible operator guide.
+- [ ] Add a second workload only when the first is reliable.
+
+## Deferred
+
+- Multi-cloud source support, broad service catalog, automatic DNS cutover, databases, EKS, Lambda rewrites, hosted control plane, compliance claims, autonomous production cutover, and generic provider plugin marketplace.
+
+## Release rule
+
+A milestone is not complete because code exists. It is complete only when its acceptance tests pass, limitations are documented, and a clean operator can reproduce the workflow.
