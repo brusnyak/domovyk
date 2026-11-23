@@ -1,52 +1,62 @@
-# domovyk
+# Domovyk
 
-Open-source planner for moving AWS workloads to EU providers (OVHcloud, Hetzner). A Go CLI that runs on your own machine with a read-only IAM role.
+**Customer-controlled, auditable workflows for moving workloads from AWS to EU cloud providers.**
 
-**Status: pre-alpha.** `discover` and `score` run (discovery has been run once against a real AWS account; `score` found no mapping for IAM roles, and the 30 mapping rows are unverified seed data). `price` compares a FOCUS 1.2 export with the Hetzner and OVHcloud rows in `map/prices.yaml`: each row has a source URL and a `checked_on` date, and rows not confirmed on the provider's page are marked `unverified`. Only services with a matching price row are priced (object storage so far); EC2 compute is reported as `NO_PRICE` until instance-hours are matched to a monthly price. `generate` and later stages do not exist.
+Domovyk is a local-first Go CLI project. Its intended job is to help operators discover a workload, produce an evidence-backed migration plan, execute approved steps, validate the target, and recover safely when something fails. It should compose established tools such as OpenTofu and workload-specific transfer utilities rather than reinvent them.
 
-## What it is meant to do
+<sub>**Status: pre-alpha. Not production-ready.**</sub>
 
-1. `discover`: read-only inventory of an AWS account into `inventory.json`.
-2. `score`: classify each service as `portable`, `rework` or `rewrite` using the open mapping data (`map/`).
-3. `price`: compare your AWS billing export (FOCUS 1.2) with OVHcloud and Hetzner price lists. Every price row carries a `checked_on` date.
-4. `generate`: OpenTofu modules for the target. Roadmap only, not in scope yet.
-5. `cut over` and `operate`: runbook with rollback and a monthly drift check. Roadmap only.
+## What exists today
 
-## Honest limits
+- AWS discovery, scoring, and pricing code is present in the repository; discovery has reportedly been run once against a real AWS account.
+- The mapping dataset contains 30 seed rows that remain unverified.
+- The IAM policy and threat model are drafts and have not received a full security review.
+- Build and test status is not yet verified. No migration execution, target provisioning, cutover, or rollback capability should be assumed.
 
-- It does not move anything. v0.1 produces a sample exit plan, nothing more.
-- It will say no to Lambda-heavy accounts. Those are `rewrite`, not a lift-and-shift.
-- No compliance claims. This is not legal advice. The EU Data Act text is the reference.
-- Prices are point-in-time. Read the `checked_on` date before trusting a number.
-- The 30 mapping rows in `map/` are unverified seed data written from general knowledge.
-- The IAM policy in `iam/` is unreviewed.
+See [PROGRESS.md](PROGRESS.md) for the verified project state and [docs/ROADMAP.md](docs/ROADMAP.md) for release gates.
 
-## Roadmap
+## Product direction
 
-In scope now:
-- v0.0: skeleton, README, read-only IAM policy (unreviewed), 30 seed mapping rows (unverified), reference AWS setup plan.
-- v0.1: discover, score, sample exit plan.
-- v0.2: price from a FOCUS export.
+Domovyk is not intended to be another cloud cost calculator or generic Terraform generator. Its proposed differentiator is a customer-owned workflow with:
 
-Roadmap only: v0.3 generate, v0.4 measured cut-over, v0.5 drift job and plugin contract tests. See `docs/ROADMAP.md`.
+1. Honest discovery coverage and explicit unknowns.
+2. A deterministic plan with evidence and a reviewable digest.
+3. Human approval before infrastructure writes and traffic changes.
+4. Durable checkpoints, safe retries, and resume after interruption.
+5. Application-level validation and documented rollback limits.
 
-## Docs
+The first proposed execution slice is one stateless EC2 workload to one Hetzner Cloud server. This scope is a hypothesis pending customer interviews and a safe pilot; databases, Kubernetes, Lambda rewrites, multi-account orchestration, and automatic production cutover are excluded initially.
 
-- `docs/SPEC.md`: architecture and six stages
-- `docs/THREAT-MODEL.md`: draft threat model
-- `docs/RESEARCH.md`: competitors and open questions, with verified and unverified labels
-- `docs/ROADMAP.md`, `PROGRESS.md`
+## Safety principles
 
-## Build (not run yet)
+- Read-only discovery by default; execution permissions are separate and opt-in.
+- No cloud writes during planning.
+- No apply without approval bound to the exact plan.
+- Fail closed on incomplete discovery, missing permissions, unknown resources, or failed validation.
+- Keep customer artifacts local and restrictive; never store credentials in plans or logs.
+- Treat rollback as a tested procedure, not a marketing promise.
+
+## Development
+
+Start with the [product strategy](docs/PRODUCT-STRATEGY.md), [reliability requirements](docs/RELIABILITY.md), and [roadmap](docs/ROADMAP.md).
+
+Once Go 1.24+ is installed:
 
 ```sh
+gofmt -w .
+go test ./...
+go vet ./...
 go build ./cmd/domovyk
 ```
 
-Replace `OWNER` in `go.mod` before publishing.
-Container proof: `deploy/k8s/README.md` — builds `domovyk:dev`, runs `domovyk score` on a local kind cluster, real output captured.
+These commands are required checks; they have not yet been run successfully in this project environment. Do not use real customer accounts for integration tests without explicit approval and a disposable scope.
 
-## Licence
+## Research
 
-Code: Apache-2.0. `LICENSE` currently holds a placeholder; the full text must be added before release.
-Mapping data in `map/`: intended CC-BY-4.0. The licence file for the data is not added yet.
+- [Competitive landscape and product decision](docs/COMPETITIVE-LANDSCAPE-2026-11.md)
+- [Research notes](docs/RESEARCH.md)
+- [Threat model](docs/THREAT-MODEL.md)
+
+## Licensing
+
+Code is intended to be Apache-2.0; mapping data is intended to be CC-BY-4.0. Verify the corresponding full license texts are present before distributing releases.

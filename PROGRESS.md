@@ -1,51 +1,36 @@
-# PROGRESS: domovyk (for Yegor)
+# PROGRESS: Domovyk
 
-Status: pre-alpha. Scope: v0.0 to v0.2 only.
+Status: pre-alpha; reliability baseline is being established. No production migration capability.
 
-## Done (files exist; nothing run)
+## Completed in this branch
 
-- [x] `README.md`, `LICENSE` (placeholder), `go.mod` (`OWNER` placeholder)
-- [x] `docs/SPEC.md`, `docs/THREAT-MODEL.md` (draft), `docs/RESEARCH.md`, `docs/ROADMAP.md`
-- [x] `cmd/domovyk/main.go` stub (not compiled; go not run)
-- [x] `iam/domovyk-readonly-policy.json` (UNREVIEWED), `iam/README.md`
-- [x] `map/domovyk-map.yaml` (30 rows, all unverified), `map/SCHEMA.md`
-- [x] `tf/reference-aws/README.md` (plan only)
-- [x] `portfolio-drafts/` (bp-main, agent-router, career-agent, lingonberry-ops)
+- [x] Repositioned project around customer-controlled, auditable migration workflows.
+- [x] Defined a narrow proposed first workload: stateless EC2 to Hetzner Cloud, pending pilot confirmation.
+- [x] Added product strategy and explicit validation gates.
+- [x] Added reliability/safety requirements for approvals, journaling, idempotency, recovery, and evidence.
+- [x] Replaced feature-count roadmap with gated reliability milestones.
+- [x] Added GitHub Actions CI for gofmt, tests, vet, and build.
 
-## Not done
+## Not verified yet
 
-- [ ] Go build check (`go build ./cmd/domovyk`). Not run.
-- [ ] IAM policy review and simulator check
-- [ ] Verify the 30 seed rows
-- [ ] GitHub and HN search for existing tools (required before v0.1)
-- [ ] Price-list source decision (bundle vs fetch)
-- [ ] Full Apache-2.0 text in `LICENSE`
-- [ ] `git init`, first commit (no push)
-- [ ] Reference AWS `.tf` files (v0.0 item, sandbox account only)
-- [ ] Portfolio drafts: owner review; lingonberry-ops has no data
+- [ ] CI has not run on this branch; build/tests are not claimed to pass.
+- [ ] Discovery pagination is incomplete or unverified; service coverage and region coverage are not complete.
+- [ ] Discovery contains unchecked pointer dereferences and uses context.Background.
+- [ ] CLI exposes direct access-key/secret-key/session flags; remove these and use the standard credential chain only.
+- [ ] IAM policy is unreviewed; do not use it for production/customer accounts.
+- [ ] Mapping rows remain unverified.
+- [ ] Threat model remains a draft.
+- [ ] License texts and mapping-data license need verification.
+- [ ] No executor, plan approval, journal, resume, validation, cutover, or rollback implementation exists.
 
-## First 5 steps
+## Current development order
 
-1. Read `docs/RESEARCH.md`, section "Must re-check before v0.1", and run the GitHub and HN searches listed there. Record hits with URL and date.
-2. Replace `OWNER` in `go.mod`, then run `go build ./cmd/domovyk` and `go run ./cmd/domovyk help`.
-3. Check `iam/domovyk-readonly-policy.json` against AWS docs and the IAM policy simulator in your sandbox account.
-4. Verify 5 seed rows in `map/domovyk-map.yaml` against AWS and provider docs. Set `checked_on` and `status` only for rows you checked.
-5. Decide the price-list source (bundled snapshot or fetch) and note it in `docs/SPEC.md` open points.
+1. Merge/review the product and CI foundation only after CI and docs review.
+2. Establish build/test baseline and fix discovery safety: pagination, nil handling, cancellation, partial-coverage reporting, atomic output, and restrictive permissions.
+3. Review IAM policy against actual SDK calls and least-privilege AWS documentation.
+4. Validate the first workload with buyer interviews and a safe pilot.
+5. Implement execution only after a pilot confirms the workload and acceptance criteria.
 
-## Unverified items written in these files
+## Release rule
 
-Every item below is marked UNVERIFIED in its file. Do not cite as fact.
-
-- Terraformer archived 16 Mar 2026 (`docs/RESEARCH.md`)
-- MinIO OSS repo archived Feb 2026 (`docs/RESEARCH.md`)
-- Steampipe plugin licences (`docs/RESEARCH.md`)
-- Former2 about 49% coverage (`docs/RESEARCH.md`)
-- Hetzner cloud-controller v1.30.0 crash (`docs/RESEARCH.md`)
-- Hetzner price rises in 2026 (`docs/RESEARCH.md`)
-- Any price number: none written; none should be added without `checked_on`
-- 30 seed mapping rows, from general knowledge (`map/domovyk-map.yaml`)
-- IAM policy, unreviewed (`iam/`)
-- Threat model is a draft, not reviewed (`docs/THREAT-MODEL.md`)
-- Reference AWS plan has no cost figure (`tf/reference-aws/README.md`)
-
-Verified by the owner (cited as verified in `docs/RESEARCH.md`): EU Data Act switching charges end 12 Jan 2027; parallel multi-cloud egress allowed at cost.
+A checkbox means evidence exists. Code presence alone is not completion. Record commands, CI results, test scope, and limitations. Never run live cloud mutations without explicit owner approval and a disposable target.
