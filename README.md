@@ -16,34 +16,24 @@
 ## Architecture
 
 ```mermaid
-flowchart TD
-    AWS[("AWS Account<br/>read-only IAM role")]:::input
-
-    Discover["domovyk discover<br/>EC2 · EBS · RDS · S3 ·<br/>EKS · Lambda · IAM"]:::implemented
-    Inventory[("inventory.json<br/>versioned manifest")]:::implemented
-
-    Score["domovyk score<br/>portable / rework /<br/>rewrite"]:::implemented
-    ScoreJSON[("score.json")]:::implemented
-
-    Price["domovyk price<br/>FOCUS 1.2 vs<br/>Hetzner / OVHcloud"]:::implemented
-    PriceJSON[("price.json")]:::implemented
-
-    Generate["domovyk generate<br/>OpenTofu HCL<br/>hcloud_* / ovh_*"]:::implemented
-    HCL[("generated/*.tf<br/>review before apply")]:::implemented
-
+flowchart LR
+    AWS[("AWS Account<br/>read-only IAM")]:::input
+    Discover["discover<br/>EC2 · EBS · RDS · S3 ·<br/>EKS · Lambda · IAM"]:::implemented
+    Inventory[("inventory.json")]:::implemented
+    Score["score<br/>portable / rework /<br/>rewrite"]:::implemented
+    Price["price<br/>FOCUS 1.2 vs<br/>Hetzner / OVHcloud"]:::implemented
+    Generate["generate<br/>OpenTofu HCL<br/>hcloud_* / ovh_*"]:::implemented
     Cutover["cut over<br/>runbook & rollback"]:::roadmap
     Operate["drift<br/>monthly job"]:::roadmap
 
-    AWS --> Discover --> Inventory --> Score --> ScoreJSON
-    ScoreJSON --> Price --> PriceJSON --> Generate --> HCL
-    HCL --> Cutover --> Operate
+    AWS --> Discover --> Inventory --> Score --> Price --> Generate --> Cutover --> Operate
 
     classDef implemented fill:#e1f7e1,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
     classDef roadmap fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100,stroke-dasharray: 5 5
     classDef input fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
 
     class AWS input
-    class Discover,Inventory,Score,ScoreJSON,Price,PriceJSON,Generate,HCL implemented
+    class Discover,Inventory,Score,Price,Generate implemented
     class Cutover,Operate roadmap
 ```
 
