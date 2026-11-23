@@ -11,17 +11,38 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// ValidClass is the set of allowed mapping classes.
+var ValidClass = map[string]bool{
+	"portable": true,
+	"rework":   true,
+	"rewrite":  true,
+}
+
 // MappingRow is one row from map/domovyk-map.yaml.
 type MappingRow struct {
-	ID     string `yaml:"id"`
-	AWSService string `yaml:"aws_service"`
-	Class  string `yaml:"class"`
-	Caveat string `yaml:"caveat"`
+	ID               string `yaml:"id"`
+	AWSService       string `yaml:"aws_service"`
+	Class            string `yaml:"class"`
+	Caveat           string `yaml:"caveat"`
+	CheckedOn        string `yaml:"checked_on"`
+	Status           string `yaml:"status"`
+	TypicalEUTarget  string `yaml:"typical_eu_target"`
 }
 
 // MappingFile is the top-level structure of domovyk-map.yaml.
 type MappingFile struct {
 	Rows []MappingRow `yaml:"rows"`
+}
+
+// MappingError records a schema/validation problem found in the mapping file.
+type MappingError struct {
+	Row   int
+	Field string
+	Msg   string
+}
+
+func (e *MappingError) Error() string {
+	return fmt.Sprintf("mapping row %d field %s: %s", e.Row, e.Field, e.Msg)
 }
 
 // ScoreResult is the scoring output for one resource.
@@ -44,7 +65,8 @@ type Summary struct {
 	Total    int `json:"total"`
 }
 
-// LoadMapping reads map/domovyk-map.yaml and returns rows indexed by AWS service prefix.
+// LoadMapping reads map/domovyk-map.yaml, validates each row against the schema,
+// and returns rows indexed by AWS service prefix.
 func LoadMapping(path string) ([]MappingRow, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -54,10 +76,39 @@ func LoadMapping(path string) ([]MappingRow, error) {
 	if err := yaml.Unmarshal(data, &mf); err != nil {
 		return nil, fmt.Errorf("parse mapping yaml: %w", err)
 	}
+	if err := validateMapping(mf.Rows); err != nil {
+		return nil, err
+	}
 	return mf.Rows, nil
 }
 
-// classify matches a resource to a mapping row by service + type prefix.
+// validateMapping checks every row for required fields and valid enum values.
+func validateMapping(rows []MappingRow) error {
+	seen := map[string]bool{}
+	for i, r := range rows {
+		row := i + 1
+		if strings.TrimSpace(r.ID) == "" {
+			return &MappingError{Row: row, Field: "id", Msg: "required"}
+		}
+		if seen[r.ID] {
+			return &MappingError{Row: row, Field: "id", Msg: "duplicate id"}
+		}
+		seen[r.ID] = true
+		if strings.TrimSpace(r.AWSService) == "" {
+			return &MappingError{Row: row, Field: "aws_service", Msg: "required"}
+		}
+		if !ValidClass[r.Class] {
+			return &MappingError{Row: row, Field: "class", Msg: fmt.Sprintf("must be one of portable, rework, rewrite; got %q", r.Class)}
+		}
+		if strings.TrimSpace(r.Caveat) == "" {
+			return &MappingError{Row: row, Field: "caveat", Msg: "required"}
+		}
+	}
+	return nil
+}
+
+// classify matches a resource to a mapping row. Exact service-name match takes
+// priority over substring matches; longer substring matches win.
 func classify(res inventory.Resource, rows []MappingRow) ScoreResult {
 	result := ScoreResult{
 		ResourceID: res.ID,
@@ -69,13 +120,21 @@ func classify(res inventory.Resource, rows []MappingRow) ScoreResult {
 	}
 
 	for _, row := range rows {
-		// Match if the AWS service name contains the resource service, or vice versa.
+		if strings.EqualFold(row.AWSService, res.Service) {
+			result.Class = row.Class
+			result.Caveat = row.Caveat
+			result.Source = row.ID
+			return result
+		}
+	}
+
+	bestLen := 0
+	for _, row := range rows {
 		serviceLower := strings.ToLower(row.AWSService)
 		resServiceLower := strings.ToLower(res.Service)
 
 		match := false
 		matchLen := 0
-
 		if strings.Contains(serviceLower, resServiceLower) {
 			match = true
 			matchLen = len(resServiceLower)
@@ -86,6 +145,7 @@ func classify(res inventory.Resource, rows []MappingRow) ScoreResult {
 
 		// Prefer longer, more specific matches.
 		if match && matchLen > len(result.Source) {
+		if match && matchLen > bestLen {
 			result.Class = row.Class
 			result.Caveat = row.Caveat
 			result.Source = row.ID

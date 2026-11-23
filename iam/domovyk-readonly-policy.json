@@ -90,6 +90,14 @@
         "iam:ListAccountAliases"
       ],
       "Resource": "*"
+    },
+    {
+      "Sid": "ReadSTSCallerIdentity",
+      "Effect": "Allow",
+      "Action": [
+        "sts:GetCallerIdentity"
+      ],
+      "Resource": "*"
     }
   ]
 }

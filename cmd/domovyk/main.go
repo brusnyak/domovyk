@@ -3,10 +3,12 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/brusnyak/domovyk/internal/discover"
 	"github.com/brusnyak/domovyk/internal/inventory"
@@ -19,6 +21,8 @@ const usage = `domovyk - AWS to EU exit planner (v0.1)
 Usage:
   domovyk discover [--region REGION] [--profile PROFILE] [--out FILE]
                    Discover read-only AWS inventory into inventory JSON.
+                   Credentials come from the AWS SDK default chain
+                   (env, ~/.aws config, assume-role, IMDS); --profile is optional.
   domovyk score    [--inventory FILE] [--mapping FILE] [--out FILE]
                    Score each resource as portable / rework / rewrite.
   domovyk price    --focus FILE --out FILE [--prices FILE] [--fx USD=0.92]
@@ -52,18 +56,15 @@ func runDiscover(args []string) {
 	fs := flag.NewFlagSet("discover", flag.ExitOnError)
 	region := fs.String("region", "eu-central-1", "AWS region to inventory")
 	profile := fs.String("profile", "", "AWS shared config profile")
-	accessKey := fs.String("access-key", "", "AWS access key ID (overrides profile/env)")
-	secretKey := fs.String("secret-key", "", "AWS secret access key (overrides profile/env)")
-	session := fs.String("session", "", "AWS session token")
 	out := fs.String("out", "inventory.json", "output inventory JSON path")
 	fs.Parse(args)
 
-	inv, err := discover.Discover(discover.Options{
-		Region:    *region,
-		Profile:   *profile,
-		AccessKey: *accessKey,
-		SecretKey: *secretKey,
-		Session:   *session,
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+
+	inv, err := discover.Discover(ctx, discover.Options{
+		Region:  *region,
+		Profile: *profile,
 	})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "discover failed: %v\n", err)
@@ -76,9 +77,13 @@ func runDiscover(args []string) {
 	}
 
 	fmt.Printf("discovered %d resources across %d services -> %s\n",
-		len(inv.Resources), len(inv.Counts), *out)
-	for svc, n := range inv.Counts {
-		fmt.Printf("  %s: %d\n", svc, n)
+		len(inv.Resources), len(inv.Manifest.Services), *out)
+	for svc, c := range inv.Manifest.Services {
+		fmt.Printf("  %s: %d (attempted=%v completed=%v)", svc, c.ResourceCount, c.Attempted, c.Completed)
+		if c.FirstError != "" {
+			fmt.Printf(" first_error=%q", c.FirstError)
+		}
+		fmt.Println()
 	}
 }
 

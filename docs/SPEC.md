@@ -1,6 +1,6 @@
 # SPEC: domovyk
 
-Status: draft, pre-alpha. Scope for this repo: v0.0 to v0.2.
+Status: draft, in-development. Scope: v0.0 to v0.2.
 
 ## Purpose
 
@@ -42,6 +42,27 @@ A contract test suite runs against every plugin. Only the AWS source and the map
 - Mapping: `map/domovyk-map.yaml`, schema in `map/SCHEMA.md`. CC-BY-4.0 intended.
 - Code: Apache-2.0.
 - `inventory.json` contains account IDs, resource names and tags. Treat it as sensitive; write it with file mode 0600.
+
+## Inventory schema (versioned)
+
+`inventory.json` carries a top-level `manifest` block:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `manifest.schema` | string | Inventory format version (`"1"`). |
+| `manifest.generated_at` | string | RFC3339 UTC timestamp of production. |
+| `manifest.account_id` | string | AWS account ID from `sts:GetCallerIdentity` (best effort). |
+| `manifest.region` | string | Primary region scanned. |
+| `manifest.regions` | string[] | Every region discovery was attempted against. |
+| `manifest.services.<name>` | object | Per-service coverage: `attempted`, `completed`, `resource_count`, `first_error`, `pagination_complete`. |
+| `manifest.total_resources` | int | Sum of all resources collected. |
+| `resources[]` | array | Discovered AWS resources. |
+
+Discovery must never report an incomplete scan as complete: each service records `attempted`/`completed`/`pagination_complete` plus `first_error` on hard failure.
+
+## Credentials
+
+`discover` uses the AWS SDK default credential chain (environment, `~/.aws` config, assume-role, IMDS). Named profile is optional via `--profile`. Secret keys are never accepted on the command line (issue #4 reliability gate).
 
 ## Build order
 

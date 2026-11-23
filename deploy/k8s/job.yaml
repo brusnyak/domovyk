@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: domovyk-sample-inventory
+data:
+  inventory.json: |
+    {
+      "generated_at": "2026-11-17T00:00:00Z",
+      "region": "eu-central-1",
+      "resources": [
+        {"id": "i-sample1", "service": "ec2", "type": "t3.medium", "region": "eu-central-1", "state": "running"},
+        {"id": "vol-sample1", "service": "ebs", "type": "gp3", "region": "eu-central-1", "state": "in-use"},
+        {"id": "sample-bucket", "service": "s3", "type": "bucket", "region": "eu-central-1", "state": "active"},
+        {"id": "sample-fn", "service": "lambda", "type": "python3.12", "region": "eu-central-1", "state": "active"},
+        {"id": "sample-glue", "service": "glue", "type": "job", "region": "eu-central-1", "state": "active"}
+      ]
+    }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: domovyk-score
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: domovyk
+          image: domovyk:dev
+          imagePullPolicy: Never
+          args: ["score", "--inventory", "/config/inventory.json", "--mapping", "/app/map/domovyk-map.yaml", "--out", "/tmp/score.json"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests: {cpu: 50m, memory: 32Mi}
+            limits: {cpu: 200m, memory: 64Mi}
+          volumeMounts:
+            - {name: inventory, mountPath: /config, readOnly: true}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: inventory
+          configMap: {name: domovyk-sample-inventory}
+        - name: tmp
+          emptyDir: {}

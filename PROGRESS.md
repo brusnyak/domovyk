@@ -9,8 +9,10 @@ Status: pre-alpha. Scope: v0.0 to v0.2 only.
 - [x] `cmd/domovyk/main.go` stub (not compiled; go not run)
 - [x] `iam/domovyk-readonly-policy.json` (UNREVIEWED), `iam/README.md`
 - [x] `map/domovyk-map.yaml` (30 rows, all unverified), `map/SCHEMA.md`
+- [x] `map/prices.yaml` (Hetzner + OVHcloud rows with checked_on and status; OVHcloud compute/managed_db marked unverified pending page confirmation)
 - [x] `tf/reference-aws/README.md` (plan only)
-- [x] `portfolio-drafts/` (bp-main, agent-router, career-agent, lingonberry-ops)
+- [x] `deploy/k8s/README.md` (container proof: kind + domovyk score job, real output captured)
+- [x] `docs/AWS-E2E-FINDINGS.md` (real AWS eu-north-1 discovery: 10 IAM roles, all unknown/unmapped)
 
 ## Not done
 
@@ -44,7 +46,7 @@ Every item below is marked UNVERIFIED in its file. Do not cite as fact.
 - Hetzner price rises in 2026 (`docs/RESEARCH.md`)
 - Any price number: none written; none should be added without `checked_on`
 - 30 seed mapping rows, from general knowledge (`map/domovyk-map.yaml`)
-- IAM policy, unreviewed (`iam/`)
+- IAM policy simulator check pending (`iam/`)
 - Threat model is a draft, not reviewed (`docs/THREAT-MODEL.md`)
 - Reference AWS plan has no cost figure (`tf/reference-aws/README.md`)
 
