@@ -1,44 +1,38 @@
 # RESEARCH: domovyk
 
-Labels: **VERIFIED** (checked by the owner, with source), **UNVERIFIED** (not checked; do not cite as fact).
+Labels: **VERIFIED** (checked against cited source), **UNVERIFIED** (not checked; do not cite as fact).
+
+## Current market finding — 2026-11-23
+
+The previous market statement below is obsolete: direct competitors now include **MoveInfra** and **EscapeCloud/cloudexit**. MoveInfra publicly offers open-source cloud-exit tools and claims AWS/GCP/Azure/DigitalOcean to EU-provider migration. EscapeCloud/cloudexit is an open-source AWS/Azure exit-readiness CLI.
+
+See the full comparison, AWS-to-EU service matrix, existing-tool alternatives, product decision and go/no-go gate in [COMPETITIVE-LANDSCAPE-2026-11.md](COMPETITIVE-LANDSCAPE-2026-11.md).
+
+**Decision:** do not build a generic assessment, price calculator, service map or IaC generator. Conditional exploration only for a customer-run, open-source execution workflow that composes existing tools and proves reliable checkpoints, validation and recovery. MoveInfra is a direct competitor; differentiation and demand remain unvalidated.
 
 ## Regulatory context
 
-- **VERIFIED (owner):** The EU Data Act ends one-off cloud switching charges from 12 January 2027.
-- **VERIFIED (owner):** Egress for parallel multi-cloud use stays allowed at cost. Routine egress is not covered by the switching rule.
+- **VERIFIED:** Article 29 of EU Regulation 2023/2854 prohibits cloud switching charges from 12 January 2027. Until then, charges may not exceed directly linked switching costs.
+- **VERIFIED:** AWS publicly offers a data-transfer-out programme for customers moving off AWS, subject to eligibility and process. Egress savings are not a defensible standalone moat.
+- **UNVERIFIED:** Domovyk's suitability for DORA exit evidence; requires a precise controls/evidence mapping and legal review.
 
-## Market check
-
-- **VERIFIED (owner, web search):** Search found only consultancies: Gart Solutions, WZ-IT, MoveInfra. No maintained open-source AWS to Hetzner tool with OpenTofu output was found. The search was not exhaustive.
-
-## Tools and projects (all UNVERIFIED unless stated)
-
-| Name | Relevance | Status claimed | Label |
-|---|---|---|---|
-| Terraformer | Export AWS resources to Terraform | Archived 16 Mar 2026 | UNVERIFIED |
-| Former2 | Generate templates from live AWS | About 49% resource coverage | UNVERIFIED |
-| Steampipe | SQL over cloud APIs | Plugin licence terms | UNVERIFIED (licences) |
-| MinIO (OSS) | S3-compatible target option | Repository archived Feb 2026 | UNVERIFIED |
-| Hetzner cloud-controller | Kubernetes integration on Hetzner | v1.30.0 reported to crash | UNVERIFIED |
-| Hetzner prices | Target cost | Price rises in 2026 | UNVERIFIED |
-
-No price number appears in this repo. Any price used later must come with a `checked_on` date.
+Sources:
+- https://eur-lex.europa.eu/eli/reg/2023/2854/oj/eng
+- https://digital-strategy.ec.europa.eu/en/factpages/data-act-explained
+- https://aws.amazon.com/blogs/aws/free-data-transfer-out-to-internet-when-moving-out-of-aws/
 
 ## Mapping seed data
 
-The 30 rows in `map/domovyk-map.yaml` come from general knowledge. Status for every row: `unverified`. `checked_on` is empty.
+The 30 rows in map/domovyk-map.yaml are unverified seed data. Do not use them to make customer-facing portability claims until each row has a primary source, destination scope, confidence, and checked_on date.
 
-## Open questions
+## Open engineering questions
 
-1. Which mapping classes hold up on real accounts? Test on the owner's `wocus` and `recareo-web` accounts before trusting any score.
-2. How are OVHcloud and Hetzner price lists obtained: bundled snapshot or live fetch? Licence of the price data is unknown.
-3. Does FOCUS 1.2 export carry enough detail for per-service pricing? Check against a real export.
-4. Is `ec2:DescribeInstanceAttribute` needed at all? It can return user data. Current policy excludes it.
-5. Can a Lambda-heavy account be detected reliably from inventory alone?
+1. Which mappings hold up against a representative real account and Terraform/OpenTofu state?
+2. Does FOCUS 1.2 provide enough detail for accurate service-level cost comparisons?
+3. How should price data be sourced, refreshed, licensed and marked stale?
+4. Can AWS inventory safely avoid sensitive fields and secret/user-data exposure?
+5. What workload and destination does a prospective pilot actually require?
 
-## Must re-check before v0.1
+## Next gate
 
-- **GitHub search** for existing AWS-to-EU exit or migration tools, with OpenTofu output. Search terms: "aws exit", "cloud exit planner", "terraform aws hetzner migration", "aws to ovh terraform". Record each hit with URL and date.
-- **Hacker News search** (Algolia HN search) for the same terms and for "cloud exit" or "EU cloud migration" over the last 12 months.
-- Re-check each UNVERIFIED row above against its primary source (repo archive status, price pages, licence files).
-- Re-check EU Data Act wording against the Official Journal text, not a summary.
+Before broad implementation, complete customer validation and select one non-critical migration route. Required: 5–10 buyer interviews, one partner willing to test with sanitized state/billing or a safe workload, a documented competitor gap, and explicit acceptance criteria for validation and rollback.
