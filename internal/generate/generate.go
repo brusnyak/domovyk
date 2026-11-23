@@ -185,6 +185,9 @@ func Generate(inv *inventory.Inventory, results []score.ScoreResult, target Targ
 	if err := os.MkdirAll(outDir, 0o755); err != nil {
 		return nil, 0, err
 	}
+	if err := writeProviderHCL(filepath.Join(outDir, "provider.tf"), target); err != nil {
+		return nil, 0, err
+	}
 
 	byID := map[string]score.ScoreResult{}
 	for _, r := range results {
@@ -205,22 +208,27 @@ func Generate(inv *inventory.Inventory, results []score.ScoreResult, target Targ
 		switch res.Service {
 		case "ec2":
 			kind := res.Details["kind"]
-			switch kind {
-			case "ec2_instance":
-				s := serverForEC2(res, target, r)
-				plan.Servers = append(plan.Servers, s)
-				if err := writeServerHCL(filepath.Join(outDir, fmt.Sprintf("server_%d.tf", serverIdx)), s, target); err != nil {
-					return nil, 0, err
-				}
-				serverIdx++
-			case "ebs_volume":
-				v := volumeForEBS(res, target, r)
-				plan.Volumes = append(plan.Volumes, v)
-				if err := writeVolumeHCL(filepath.Join(outDir, fmt.Sprintf("volume_%d.tf", volumeIdx)), v, target); err != nil {
-					return nil, 0, err
-				}
-				volumeIdx++
+			if kind != "ec2_instance" {
+				skipped++
+				continue
 			}
+			s := serverForEC2(res, target, r)
+			plan.Servers = append(plan.Servers, s)
+			if err := writeServerHCL(filepath.Join(outDir, fmt.Sprintf("server_%d.tf", serverIdx)), s, target); err != nil {
+				return nil, 0, err
+			}
+			serverIdx++
+		case "ebs":
+			if res.Details["kind"] != "ebs_volume" {
+				skipped++
+				continue
+			}
+			v := volumeForEBS(res, target, r)
+			plan.Volumes = append(plan.Volumes, v)
+			if err := writeVolumeHCL(filepath.Join(outDir, fmt.Sprintf("volume_%d.tf", volumeIdx)), v, target); err != nil {
+				return nil, 0, err
+			}
+			volumeIdx++
 		case "rds":
 			d := databaseForRDS(res, target)
 			plan.Databases = append(plan.Databases, d)
@@ -235,7 +243,7 @@ func Generate(inv *inventory.Inventory, results []score.ScoreResult, target Targ
 			}
 		}
 	}
-
+ 
 	// Sort for stable output.
 	sort.Slice(plan.Servers, func(i, j int) bool { return plan.Servers[i].Name < plan.Servers[j].Name })
 	sort.Slice(plan.Volumes, func(i, j int) bool { return plan.Volumes[i].Name < plan.Volumes[j].Name })
@@ -247,12 +255,14 @@ func Generate(inv *inventory.Inventory, results []score.ScoreResult, target Targ
 	}
 	return plan, skipped, nil
 }
-
 func serverForEC2(res inventory.Resource, target Target, r score.ScoreResult) Server {
 	m := targetInstance(res.Type, target)
-	image := "ubuntu-22.04"
-	if target == OVHcloud {
-		image = "ubuntu-2204"
+	image := res.Details["image_id"]
+	if image == "" {
+		image = "ubuntu-22.04"
+		if target == OVHcloud {
+			image = "ubuntu-2204"
+		}
 	}
 	return Server{
 		Name:     res.ID,
@@ -273,7 +283,7 @@ func volumeForEBS(res inventory.Resource, target Target, r score.ScoreResult) Vo
 		Name:     res.ID,
 		SizeGB:   sizeGB,
 		Region:   res.Region,
-		PriceEUR: 0.044, // advisory GB/month, matches prices.yaml hetzner volumes row
+		PriceEUR: 0.0, // advisory only; source from map/prices.yaml before relying on it
 		SourceID: res.ID,
 	}
 }
@@ -383,4 +393,58 @@ func providerName(target Target) string {
 		return "hcloud"
 	}
 	return "ovh"
+}
+
+func writeProviderHCL(path string, target Target) error {
+	provider := providerName(target)
+	source, ok := providerSource[provider]
+	if !ok {
+		return fmt.Errorf("no terraform provider source for %q", provider)
+	}
+	content := fmt.Sprintf(`terraform {
+  required_providers {
+    %s = {
+      source  = %q
+      version = ">= 1.0"
+    }
+  }
+}
+
+provider "%s" {
+  token = var.%s_token
+}
+
+variable "%s_token" {
+  type        = string
+  description = "API token for %s"
+  sensitive   = true
+}
+
+variable "%s_region" {
+  type        = string
+  default     = "%s"
+  description = "Default region for %s resources"
+}
+`, provider, source, provider, providerNameCapitalized(provider), provider, providerNameCapitalized(provider), provider, regionDefault(target), provider)
+	return os.WriteFile(path, []byte(content), 0o600)
+}
+
+// providerSource maps domovyk internal provider names to Terraform registry sources.
+var providerSource = map[string]string{
+	"hcloud": "hetznercloud/hcloud",
+	"ovh":    "ovh/ovh",
+}
+
+func providerNameCapitalized(provider string) string {
+	if provider == "hcloud" {
+		return "Hetzner"
+	}
+	return "OVHcloud"
+}
+
+func regionDefault(target Target) string {
+	if target == Hetzner {
+		return "nbg1"
+	}
+	return "PAR1"
 }

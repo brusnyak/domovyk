@@ -26,9 +26,17 @@ Open-source exit planner: AWS to EU cloud. Go CLI that runs locally with a read-
 | cut over | plan | runbook with rollback: `pgcopydb --follow` (Postgres), `rclone` (S3), Velero (volumes), DNS TTL lowered 48 h ahead | v0.4 (roadmap) |
 | operate | target | Prometheus, Grafana, Loki, OTel; monthly `domovyk drift` job | v0.5 (roadmap) |
 
-## Provider plugin interface
+## Credentials and offline operation
 
-Each provider implements:
+`discover` uses the AWS SDK default credential chain (environment, `~/.aws` config, assume-role, IMDS). Named profile is optional via `--profile`. Secret keys are never accepted on the command line (issue #4 reliability gate).
+
+**Offline constraint:** discovery requires refreshable AWS credentials reachable from the SDK chain. EC2 IMDS (`169.254.169.254`) is only available on EC2; running from a laptop with an assumed-role ARN in `~/.aws/config` requires SSO/refreshable credentials or static `~/.aws/credentials`. Live discovery is blocked until credential-chain config is fixed by the operator.
+
+Price lists and mapping data are bundled snapshots, not fetched live. This keeps the CLI air-gap compatible.
+
+## Provider plugin interface (declared-only)
+
+The following provider plugin contract is documented here as a future target; nothing in code implements it yet:
 
 - `Discover()`: list resources from the source or target.
 - `Price()`: return priced rows with `checked_on`.
@@ -36,6 +44,10 @@ Each provider implements:
 - `Generate()`: emit OpenTofu (v0.3+).
 
 A contract test suite runs against every plugin. Only the AWS source and the mapping data are in scope before v0.3.
+
+## Price-list source decision
+
+Price lists are bundled as a dated snapshot in `map/prices.yaml`, each row carrying `checked_on` and `status`. They are NOT fetched live. Rationale: the CLI runs offline/local-first; fetching live would require network access, JS-rendered pages (OVHcloud), and introduce a trust/availability dependency not compatible with an air-gapped operator machine. Operators may replace `map/prices.yaml` with fresher rows at any time; each row must keep `checked_on`, `status`, and `source_url`.
 
 ## Data
 

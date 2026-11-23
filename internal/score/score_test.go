@@ -158,3 +158,28 @@ func TestScoreSummary(t *testing.T) {
 		}
 	}
 }
+func TestClassifyEBSBackToEC2Volume(t *testing.T) {
+	rows := []MappingRow{
+		{ID: "aws-ec2-instance", AWSService: "Amazon EC2 (instances)", Class: "portable", Caveat: "caveat ec2", CheckedOn: "", Status: "unverified", TypicalEUTarget: "t"},
+		{ID: "aws-ebs-volume", AWSService: "Amazon EBS (volumes)", Class: "rework", Caveat: "caveat ebs", CheckedOn: "", Status: "unverified", TypicalEUTarget: "t"},
+	}
+	inv := inventory.NewInventory("eu-central-1")
+	inv.Resources = []inventory.Resource{
+		{ID: "i-1", Service: "ec2", Type: "t3.medium", Details: map[string]string{"kind": "ec2_instance"}},
+		{ID: "vol-1", Service: "ebs", Type: "gp3", Details: map[string]string{"kind": "ebs_volume"}},
+	}
+	results, _ := Score(inv, rows)
+	if len(results) != 2 {
+		t.Fatalf("expected 2 results, got %d", len(results))
+	}
+	byID := map[string]ScoreResult{}
+	for _, r := range results {
+		byID[r.ResourceID] = r
+	}
+	if byID["i-1"].Class != "portable" || byID["i-1"].Source != "aws-ec2-instance" {
+		t.Errorf("ec2 instance got class=%q source=%q, want portable/aws-ec2-instance", byID["i-1"].Class, byID["i-1"].Source)
+	}
+	if byID["vol-1"].Class != "rework" || byID["vol-1"].Source != "aws-ebs-volume" {
+		t.Errorf("ebs volume got class=%q source=%q, want rework/aws-ebs-volume", byID["vol-1"].Class, byID["vol-1"].Source)
+	}
+}

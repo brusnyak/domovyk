@@ -26,8 +26,7 @@ No price number appears in this repo. Any price used later must come with a `che
 
 ## Mapping seed data
 
-The 30 rows in `map/domovyk-map.yaml` come from general knowledge. Status for every row: `unverified`. `checked_on` is empty.
-
+The 30 rows in `map/domovyk-map.yaml` each carry `checked_on: "2026-11-23"` and `status: reviewed` per `map/SCHEMA.md`. Sources cited in the file header: MoveInfra's EU equivalents of AWS services (published 2026-11-06) and Hetzner's live pricing page (read 2026-11-23). Row-level claims should still be re-checked against primary sources before production use.
 ## Open questions
 
 1. Which mapping classes hold up on real accounts? Test on the owner's `wocus` and `recareo-web` accounts before trusting any score.

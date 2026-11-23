@@ -30,7 +30,7 @@ func TestGenerateHetzner(t *testing.T) {
 	inv := inventory.NewInventory("eu-central-1")
 	inv.Resources = []inventory.Resource{
 		{ID: "i-1", Service: "ec2", Type: "t3.medium", Region: "eu-central-1", State: "running", Details: map[string]string{"kind": "ec2_instance", "size_gb": "80"}},
-		{ID: "vol-1", Service: "ec2", Type: "gp3", Region: "eu-central-1", State: "in-use", Details: map[string]string{"kind": "ebs_volume", "size_gb": "100"}},
+		{ID: "vol-1", Service: "ebs", Type: "gp3", Region: "eu-central-1", State: "in-use", Details: map[string]string{"kind": "ebs_volume", "size_gb": "100"}},
 		{ID: "db-1", Service: "rds", Type: "db.t3.micro", Region: "eu-central-1", State: "available", Details: map[string]string{"engine": "postgres"}},
 		{ID: "b-1", Service: "s3", Type: "bucket", Region: "eu-central-1", State: "active", Details: map[string]string{}},
 	}

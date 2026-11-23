@@ -53,7 +53,7 @@ func scanEBSVolumes(ctx context.Context, ec2Client EC2API, region string, inv *i
 			}
 			inv.Resources = append(inv.Resources, inventory.Resource{
 				ID:     strVal(vol.VolumeId),
-				Service: "ec2",
+				Service: "ebs",
 				Type:    string(vol.VolumeType),
 				Region:  region,
 				State:   string(vol.State),
@@ -63,6 +63,7 @@ func scanEBSVolumes(ctx context.Context, ec2Client EC2API, region string, inv *i
 					"size_gb":   fmt.Sprintf("%d", strInt32(vol.Size)),
 					"az":        strVal(vol.AvailabilityZone),
 					"encrypted": boolVal(&encrypted),
+					"kind":      "ebs_volume",
 				},
 			})
 			cov.ResourceCount++

@@ -17,39 +17,26 @@
 
 ```mermaid
 flowchart TD
-    %% Input
     AWS[("AWS Account<br/>read-only IAM role")]:::input
 
-    %% v0.1 — discover
     Discover["domovyk discover<br/>EC2 · EBS · RDS · S3 ·<br/>EKS · Lambda · IAM"]:::implemented
-    Inventory[("inventory.json<br/>versioned manifest<br/>account ID · coverage")]:::implemented
+    Inventory[("inventory.json<br/>versioned manifest")]:::implemented
 
-    %% v0.1 — score
     Score["domovyk score<br/>portable / rework /<br/>rewrite"]:::implemented
     ScoreJSON[("score.json")]:::implemented
 
-    %% v0.2 — price
     Price["domovyk price<br/>FOCUS 1.2 vs<br/>Hetzner / OVHcloud"]:::implemented
     PriceJSON[("price.json")]:::implemented
 
-    %% v0.3 — generate
     Generate["domovyk generate<br/>OpenTofu HCL<br/>hcloud_* / ovh_*"]:::implemented
     HCL[("generated/*.tf<br/>review before apply")]:::implemented
 
-    %% v0.4–v0.5 — roadmap
-    Cutover["domovyk cut over<br/>runbook & rollback"]:::roadmap
-    Operate["domovyk drift<br/>monthly job"]:::roadmap
+    Cutover["cut over<br/>runbook & rollback"]:::roadmap
+    Operate["drift<br/>monthly job"]:::roadmap
 
-    AWS --> Discover
-    Discover --> Inventory
-    Inventory --> Score
-    Score --> ScoreJSON
-    ScoreJSON --> Price
-    Price --> PriceJSON
-    PriceJSON --> Generate
-    Generate --> HCL
-    HCL --> Cutover
-    Cutover --> Operate
+    AWS --> Discover --> Inventory --> Score --> ScoreJSON
+    ScoreJSON --> Price --> PriceJSON --> Generate --> HCL
+    HCL --> Cutover --> Operate
 
     classDef implemented fill:#e1f7e1,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
     classDef roadmap fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100,stroke-dasharray: 5 5
@@ -83,17 +70,18 @@ go build ./cmd/domovyk
 ./domovyk price --focus internal/price/testdata/focus.csv --out price.json
 ```
 
-`discover` needs AWS credentials (`~/.aws/credentials` or `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`). It uses the AWS SDK default credential chain — secret keys are never accepted on the command line (issue #4 reliability gate).
+`discover` uses `--profile` for a named profile; on this machine the default profile resolves an assumed-role ARN through `~/.aws/config` (set by `aws login`), so live discovery needs valid refreshable credentials — EC2 IMDS is unreachable off-instance.
 
+`discover` needs AWS credentials (`~/.aws/credentials` or `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`). It uses the AWS SDK default credential chain — secret keys are never accepted on the command line (issue #4 reliability gate).
 ## Capabilities
 
 | Capability | Detail |
 |---|---|
 | Read-only discovery | Paginated AWS API calls, caller context + 2-minute per-service timeout, nil-safe response conversion, per-service coverage manifest |
 | Versioned inventory | `inventory.json` with `manifest.schema`, `account_id`, `region`, `regions`, `services[].{attempted,completed,pagination_complete,first_error}`, `total_resources` |
-| Portability scoring | Schema-validated mapping rows (`map/domovyk-map.yaml`, all 30 verified against primary sources), exact-match-then-substring matching, stable result ordering |
+| Portability scoring | Schema-validated mapping rows (`map/domovyk-map.yaml`, 30 rows each carrying `checked_on` and `status` per `map/SCHEMA.md`), exact-match-then-substring matching, stable result ordering |
 | Price comparison | FOCUS 1.2 CSV parsing, explicit FX conversion, `no_price` with provenance (never invents a verification date), atomic mode-0600 output |
-| OpenTofu generation | `hcloud_instance`, `hcloud_volume`, `ovh_instance`, `ovh_volume`, `hcloud_database`, `ovh_database`, `hcloud_bucket`, `ovh_bucket` HCL with advisory pricing |
+| OpenTofu generation | `hcloud_instance`, `hcloud_volume`, `ovh_instance`, `ovh_volume`, `hcloud_database`, `ovh_database`, `hcloud_bucket`, `ovh_bucket` HCL with advisory pricing; provider block + `required_providers` emitted so `tofu apply` can run after review |
 
 ## Honest limits
 
