@@ -66,11 +66,13 @@ Discovery must never report an incomplete scan as complete: each service records
 
 ## Build order
 
-v0.0 skeleton, README, read-only IAM policy, 30 seed rows, reference AWS setup in OpenTofu (EC2, RDS, S3, ALB). Note: the reference setup is planned only in this repo (`tf/reference-aws/README.md`), no `.tf` files yet.
-
+v0.0 skeleton, README, read-only IAM policy, 30 seed mapping rows, reference AWS setup in OpenTofu (`tf/reference-aws/`).
 v0.1 discover, score, sample exit plan. v0.2 price from a FOCUS export. v0.3 to v0.5: roadmap only.
+
+## Price-list source decision
+
+Price lists are bundled as a dated snapshot in `map/prices.yaml`, each row carrying `checked_on` and `status`. They are NOT fetched live. Rationale: the CLI runs offline/local-first; fetching live would require network access, JS-rendered pages (OVHcloud), and introduce a trust/availability dependency not compatible with an air-gapped operator machine. Operators may replace `map/prices.yaml` with fresher rows at any time; each row must keep `checked_on`, `status`, and `source_url`.
 
 ## Open design points
 
-- How price lists are obtained (bundled snapshot or fetched). Not decided.
 - Mapping data format for multi-service patterns (for example, ALB plus target groups). Not decided.
