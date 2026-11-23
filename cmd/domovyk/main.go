@@ -44,7 +44,7 @@ Usage:
                    Score each resource as portable / rework / rewrite.
   domovyk price    --focus FILE --out FILE [--prices FILE] [--fx USD=0.92]
                    Compare AWS billing against OVHcloud / Hetzner (v0.2).
-  domovyk generate [--inventory FILE] [--score FILE] [--out DIR] [--target hetzner|ovhcloud]
+  domovyk generate [--inventory FILE] [--out DIR] [--target hetzner|ovhcloud]
                    Generate OpenTofu HCL for the target from scored inventory (v0.3).
 `
 
@@ -193,7 +193,7 @@ func runGenerate(args []string) {
 
 	results, _ := score.Score(inv, rows)
 
-	plan, err := generate.Generate(inv, results, generate.Target(*target), *outDir)
+	plan, skipped, err := generate.Generate(inv, results, generate.Target(*target), *outDir)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "generate failed: %v\n", err)
 		os.Exit(1)
@@ -201,5 +201,6 @@ func runGenerate(args []string) {
 
 	fmt.Printf("generated %d servers, %d volumes, %d databases, %d buckets -> %s\n",
 		len(plan.Servers), len(plan.Volumes), len(plan.Databases), len(plan.Buckets), *outDir)
+	fmt.Printf("skipped %d resources (rewrite or unknown)\n", skipped)
 	fmt.Println("Review and right-size the generated HCL before `tofu apply`.")
 }

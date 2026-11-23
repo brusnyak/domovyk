@@ -175,14 +175,15 @@ type Bucket struct {
 }
 
 // Generate writes OpenTofu HCL for every portable/rework scored resource into outDir.
-// rewrite resources are skipped (no direct equivalent). Returns the plan. The operator
-// must review and right-size before `tofu apply`.
-func Generate(inv *inventory.Inventory, results []score.ScoreResult, target Target, outDir string) (*Plan, error) {
+// rewrite and unknown resources are skipped (no direct equivalent).
+// Returns the plan and the number of resources skipped.
+// The operator must review and right-size before `tofu apply`.
+func Generate(inv *inventory.Inventory, results []score.ScoreResult, target Target, outDir string) (*Plan, int, error) {
 	if !validTarget(target) {
-		return nil, fmt.Errorf("unsupported target %q; use hetzner or ovhcloud", target)
+		return nil, 0, fmt.Errorf("unsupported target %q; use hetzner or ovhcloud", target)
 	}
 	if err := os.MkdirAll(outDir, 0o755); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	byID := map[string]score.ScoreResult{}
@@ -193,10 +194,12 @@ func Generate(inv *inventory.Inventory, results []score.ScoreResult, target Targ
 	plan := &Plan{}
 	serverIdx := 0
 	volumeIdx := 0
+	skipped := 0
 
 	for _, res := range inv.Resources {
 		r, ok := byID[res.ID]
 		if !ok || r.Class == "rewrite" || r.Class == "unknown" {
+			skipped++
 			continue
 		}
 		switch res.Service {
@@ -207,14 +210,14 @@ func Generate(inv *inventory.Inventory, results []score.ScoreResult, target Targ
 				s := serverForEC2(res, target, r)
 				plan.Servers = append(plan.Servers, s)
 				if err := writeServerHCL(filepath.Join(outDir, fmt.Sprintf("server_%d.tf", serverIdx)), s, target); err != nil {
-					return nil, err
+					return nil, 0, err
 				}
 				serverIdx++
 			case "ebs_volume":
 				v := volumeForEBS(res, target, r)
 				plan.Volumes = append(plan.Volumes, v)
 				if err := writeVolumeHCL(filepath.Join(outDir, fmt.Sprintf("volume_%d.tf", volumeIdx)), v, target); err != nil {
-					return nil, err
+					return nil, 0, err
 				}
 				volumeIdx++
 			}
@@ -222,13 +225,13 @@ func Generate(inv *inventory.Inventory, results []score.ScoreResult, target Targ
 			d := databaseForRDS(res, target)
 			plan.Databases = append(plan.Databases, d)
 			if err := writeDatabaseHCL(filepath.Join(outDir, fmt.Sprintf("database_%d.tf", len(plan.Databases)-1)), d, target); err != nil {
-				return nil, err
+				return nil, 0, err
 			}
 		case "s3":
 			b := bucketForS3(res)
 			plan.Buckets = append(plan.Buckets, b)
 			if err := writeBucketHCL(filepath.Join(outDir, fmt.Sprintf("bucket_%d.tf", len(plan.Buckets)-1)), b, target); err != nil {
-				return nil, err
+				return nil, 0, err
 			}
 		}
 	}
@@ -240,9 +243,9 @@ func Generate(inv *inventory.Inventory, results []score.ScoreResult, target Targ
 	sort.Slice(plan.Buckets, func(i, j int) bool { return plan.Buckets[i].Name < plan.Buckets[j].Name })
 
 	if err := writePlanHCL(filepath.Join(outDir, "plan.tf"), plan); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return plan, nil
+	return plan, skipped, nil
 }
 
 func serverForEC2(res inventory.Resource, target Target, r score.ScoreResult) Server {

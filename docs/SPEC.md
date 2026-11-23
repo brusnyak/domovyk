@@ -1,10 +1,10 @@
 # SPEC: domovyk
 
-Status: draft, in-development. Scope: v0.0 to v0.2.
+Status: draft, in-development. Scope: v0.0 to v0.3.
 
 ## Purpose
 
-Open-source exit planner: AWS to EU cloud. Go CLI. Runs locally with a read-only IAM role. Produces an inventory, a portability score per service, a price comparison and, later, a generated target.
+Open-source exit planner: AWS to EU cloud. Go CLI that runs locally with a read-only IAM role. Produces an inventory, a portability score per service, a price comparison, and OpenTofu HCL for the EU target.
 
 ## Non-negotiables
 
@@ -22,7 +22,7 @@ Open-source exit planner: AWS to EU cloud. Go CLI. Runs locally with a read-only
 | discover | AWS account, read-only IAM | `inventory.json` | v0.1 |
 | score | `inventory.json`, `map/domovyk-map.yaml` | per-service class: `portable`, `rework`, `rewrite` | v0.1 |
 | price | FOCUS 1.2 billing export, OVHcloud and Hetzner price lists | cost table with `checked_on` per row | v0.2 |
-| generate | exit plan | OpenTofu modules: OVH Managed Kubernetes; Talos or k3s on Hetzner; Argo CD, cert-manager, external-dns, External Secrets | v0.3 (roadmap) |
+| generate | scored `inventory.json` | OpenTofu HCL (`hcloud_*` / `ovh_*`) for portable/rework resources | v0.3 |
 | cut over | plan | runbook with rollback: `pgcopydb --follow` (Postgres), `rclone` (S3), Velero (volumes), DNS TTL lowered 48 h ahead | v0.4 (roadmap) |
 | operate | target | Prometheus, Grafana, Loki, OTel; monthly `domovyk drift` job | v0.5 (roadmap) |
 
@@ -67,7 +67,7 @@ Discovery must never report an incomplete scan as complete: each service records
 ## Build order
 
 v0.0 skeleton, README, read-only IAM policy, 30 seed mapping rows, reference AWS setup in OpenTofu (`tf/reference-aws/`).
-v0.1 discover, score, sample exit plan. v0.2 price from a FOCUS export. v0.3 to v0.5: roadmap only.
+v0.1 discover, score, sample exit plan. v0.2 price from a FOCUS export. v0.3 generate OpenTofu HCL. v0.4 to v0.5: roadmap only.
 
 ## Price-list source decision
 

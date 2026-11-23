@@ -43,7 +43,7 @@ func TestGenerateHetzner(t *testing.T) {
 
 	dir := t.TempDir()
 	out := filepath.Join(dir, "gen")
-	plan, err := Generate(inv, rows, Hetzner, out)
+	plan, skipped, err := Generate(inv, rows, Hetzner, out)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,6 +58,9 @@ func TestGenerateHetzner(t *testing.T) {
 	}
 	if len(plan.Buckets) != 1 || plan.Buckets[0].Name != "b-1" {
 		t.Fatalf("unexpected bucket plan: %+v", plan.Buckets)
+	}
+	if skipped != 0 {
+		t.Fatalf("expected 0 skipped, got %d", skipped)
 	}
 
 	// Verify HCL files exist and reference hcloud provider.
@@ -83,12 +86,15 @@ func TestGenerateOVH(t *testing.T) {
 
 	dir := t.TempDir()
 	out := filepath.Join(dir, "gen")
-	plan, err := Generate(inv, rows, OVHcloud, out)
+	plan, skipped, err := Generate(inv, rows, OVHcloud, out)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(plan.Servers) != 1 || plan.Servers[0].Type != "b3-32" || plan.Servers[0].Image != "ubuntu-2204" {
 		t.Fatalf("unexpected ovh server plan: %+v", plan.Servers)
+	}
+	if skipped != 0 {
+		t.Fatalf("expected 0 skipped, got %d", skipped)
 	}
 	content, err := os.ReadFile(filepath.Join(out, "server_0.tf"))
 	if err != nil {
@@ -101,7 +107,7 @@ func TestGenerateOVH(t *testing.T) {
 
 func TestGenerateRejectsInvalidTarget(t *testing.T) {
 	inv := inventory.NewInventory("eu-central-1")
-	_, err := Generate(inv, nil, Target("aws"), t.TempDir())
+	_, _, err := Generate(inv, nil, Target("aws"), t.TempDir())
 	if err == nil || !strings.Contains(err.Error(), "unsupported target") {
 		t.Fatalf("expected unsupported target error, got %v", err)
 	}
@@ -122,11 +128,14 @@ func TestGenerateSkipsRewriteAndUnknown(t *testing.T) {
 
 	dir := t.TempDir()
 	out := filepath.Join(dir, "gen")
-	plan, err := Generate(inv, rows, Hetzner, out)
+	plan, skipped, err := Generate(inv, rows, Hetzner, out)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(plan.Servers) != 1 {
 		t.Fatalf("expected 1 server (rewrite/unknown skipped), got %d", len(plan.Servers))
+	}
+	if skipped != 2 {
+		t.Fatalf("expected 2 skipped, got %d", skipped)
 	}
 }

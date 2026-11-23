@@ -4,7 +4,7 @@
 
 - [x] Folder layout and README (`README.md`)
 - [x] Spec and threat-model draft (`docs/`)
-- [x] Go CLI with `discover`, `score`, `price` (`cmd/domovyk/`)
+- [x] Go CLI with `discover`, `score`, `price`, `generate` (`cmd/domovyk/`)
 - [x] Read-only IAM policy, reviewed against actual SDK calls (`iam/`)
 - [x] 30 seed mapping rows, verified against MoveInfra EU equivalents + Hetzner live pricing (`map/`, `checked_on: 2026-11-23`, status `reviewed`)
 - [x] Reference AWS setup in OpenTofu (`tf/reference-aws/`): VPC, EC2, RDS, S3, ALB
@@ -27,9 +27,15 @@
 - [x] Cost comparison table with stale-price warning (unverified rows printed as UNVERIFIED)
 - [ ] Run against a real FOCUS billing export (not yet available)
 
+## v0.3: generate OpenTofu modules (implemented)
+
+- [x] `domovyk generate` emits OpenTofu HCL (`hcloud_*` / `ovh_*`) for portable/rework resources from a scored inventory
+- [x] Rewrite and unknown resources are skipped and reported
+- [x] Advisory pricing with `checked_on` provenance
+- [x] Review-and-right-size workflow (no automatic apply)
+
 ## Roadmap only (not in scope)
 
-- v0.3: generate OpenTofu modules (OVH Managed Kubernetes; Talos or k3s on Hetzner; Argo CD, cert-manager, external-dns, External Secrets)
 - v0.4: measured cut-over with runbook and rollback (pgcopydb --follow, rclone, Velero, DNS TTL lowered 48 h ahead). Owner's `wocus` and `recareo-web` as first real case.
 - v0.5: monthly `domovyk drift` job; provider plugin contract test suite
 
