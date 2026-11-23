@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/brusnyak/domovyk/internal/discover"
+	"github.com/brusnyak/domovyk/internal/generate"
 	"github.com/brusnyak/domovyk/internal/inventory"
 	"github.com/brusnyak/domovyk/internal/price"
 	"github.com/brusnyak/domovyk/internal/score"
@@ -43,6 +44,8 @@ Usage:
                    Score each resource as portable / rework / rewrite.
   domovyk price    --focus FILE --out FILE [--prices FILE] [--fx USD=0.92]
                    Compare AWS billing against OVHcloud / Hetzner (v0.2).
+  domovyk generate [--inventory FILE] [--score FILE] [--out DIR] [--target hetzner|ovhcloud]
+                   Generate OpenTofu HCL for the target from scored inventory (v0.3).
 `
 
 func main() {
@@ -60,6 +63,8 @@ func main() {
 		runScore(os.Args[2:])
 	case "price":
 		runPrice(os.Args[2:])
+	case "generate":
+		runGenerate(os.Args[2:])
 	case "-h", "--help", "help":
 		fmt.Print(usage)
 	default:
@@ -165,4 +170,36 @@ func runPrice(args []string) {
 		fmt.Fprintf(os.Stderr, "print failed: %v\n", err)
 		os.Exit(1)
 	}
+}
+
+func runGenerate(args []string) {
+	fs := flag.NewFlagSet("generate", flag.ExitOnError)
+	inventoryPath := fs.String("inventory", "inventory.json", "input inventory JSON path")
+	outDir := fs.String("out", "generated", "output directory for OpenTofu HCL")
+	target := fs.String("target", "hetzner", "EU target: hetzner or ovhcloud")
+	fs.Parse(args)
+
+	inv, err := inventory.Load(*inventoryPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "load inventory failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	rows, err := score.LoadMapping("map/domovyk-map.yaml")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "load mapping failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	results, _ := score.Score(inv, rows)
+
+	plan, err := generate.Generate(inv, results, generate.Target(*target), *outDir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "generate failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("generated %d servers, %d volumes, %d databases, %d buckets -> %s\n",
+		len(plan.Servers), len(plan.Volumes), len(plan.Databases), len(plan.Buckets), *outDir)
+	fmt.Println("Review and right-size the generated HCL before `tofu apply`.")
 }

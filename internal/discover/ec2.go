@@ -66,6 +66,7 @@ func scanEC2Instances(ctx context.Context, ec2Client EC2API, region string, inv 
 						"subnet_id":     strVal(inst.SubnetId),
 						"private_ip":    strVal(inst.PrivateIpAddress),
 						"architecture":  string(inst.Architecture),
+						"kind":          "ec2_instance",
 					},
 				})
 				cov.ResourceCount++
